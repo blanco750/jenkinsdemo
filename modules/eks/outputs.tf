@@ -9,11 +9,6 @@ output "cluster_id" {
 }
 
 
-output "ecr_repo_uri" {
-    description = "ECR Repo URI"
-    value = aws_ecr_repository.fuse_ecr_repo.repository_url
-}
-
 output "depended_on" {
     value = "${null_resource.dependency_setter.id}"
 }
