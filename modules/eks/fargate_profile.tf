@@ -1,46 +1,37 @@
-resource "time_sleep" "wait1_10_seconds" {
-  depends_on = [aws_eks_cluster.fuseEKScluster]
-
-  create_duration = "10s"
-}
-
-
 resource "aws_eks_fargate_profile" "default" {
-  depends_on             = [time_sleep.wait1_10_seconds]
-  cluster_name           = aws_eks_cluster.fuseEKScluster.name
-  fargate_profile_name   = "fp-default"
-  pod_execution_role_arn = aws_iam_role.fargate_pod_execution_role.arn
-  subnet_ids             = var.private_subnets.*.id
+    cluster_name           = aws_eks_cluster.fuseEKScluster.name
+    fargate_profile_name   = "fp-default"
+    pod_execution_role_arn = aws_iam_role.fargate_pod_execution_role.arn
+    subnet_ids             = var.private_subnets.*.id
 
-  selector {
+    selector {
     namespace = "default"
-  }
+    }
 
-  selector {
-    namespace = var.namespace
-  }
+    selector {
+    namespace = "demoapp"
+    }
 
-  selector {
+    selector {
     namespace = "kube-system"
-  }
+    }
 
-  timeouts {
+    timeouts {
     create = "30m"
     delete = "60m"
-  }
+    }
 }
 
-resource "time_sleep" "wait2_20_seconds" {
-  depends_on = [null_resource.updatekubeconfig]
+resource "time_sleep" "wait_60_seconds" {
+  depends_on = [aws_eks_fargate_profile.default]
 
-  create_duration = "20s"
+  create_duration = "60s"
 }
 
-
-resource "time_sleep" "wait3_10_seconds" {
-  depends_on = [null_resource.coredns_patch]
-
-  create_duration = "10s"
+resource "null_resource" "dependency_setter" {
+  depends_on = [
+    aws_eks_fargate_profile.default,time_sleep.wait_60_seconds
+  ]
 }
 
 
@@ -57,5 +48,5 @@ kubectl  \
   -p='[{"op": "remove", "path": "/spec/template/metadata/annotations", "value": "eks.amazonaws.com/compute-type"}]'
 EOF
   }
-  depends_on = [time_sleep.wait2_20_seconds]
+  depends_on = [time_sleep.wait_60_seconds]
 }

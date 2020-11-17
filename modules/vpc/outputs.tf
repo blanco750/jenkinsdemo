@@ -1,11 +1,11 @@
 output "vpcid" {
-  value = aws_vpc.eksfuse.id
+    value = aws_vpc.eksfuse.id
 }
 
 output "public_subnets" {
-  value = aws_subnet.public
+    value = aws_subnet.public
 }
 
 output "private_subnets" {
-  value = aws_subnet.private
+    value = aws_subnet.private
 }

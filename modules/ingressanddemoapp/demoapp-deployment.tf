@@ -1,3 +1,13 @@
+resource "kubernetes_namespace" "demoapp" {
+    metadata {
+    labels = {
+        app = "demoapp"
+    }
+
+    name = "demoapp"
+    }
+    depends_on = [ kubernetes_cluster_role.ingress,kubernetes_service_account.ingress,null_resource.dependency_getter ]
+}
 # resource "kubernetes_deployment" "demoapp" {
 #     metadata {
 #         name      = "demoapp"
@@ -46,8 +56,8 @@
 #     depends_on = [null_resource.dependency_getter, kubernetes_namespace.demoapp]
 # }
 
-# resource "null_resource" "dependency_getter" {
-#     provisioner "local-exec" {
-#     command = "echo ${length(var.dependencies)}"
-#     }
-# }
+resource "null_resource" "dependency_getter" {
+    provisioner "local-exec" {
+    command = "echo ${length(var.dependencies)}"
+    }
+}

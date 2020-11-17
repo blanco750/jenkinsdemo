@@ -1,9 +1,6 @@
 # variable "profile_name" {
 
 # }
-variable "eksclustername" {
-  description = "the name of eks cluster"
-}
 
 variable "eksstackname" {
   description = "the name of eks stack"

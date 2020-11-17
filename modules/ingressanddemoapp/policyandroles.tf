@@ -1,24 +1,24 @@
 provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
-  load_config_file       = false
-  version                = "~> 1.13"
+    host                   = data.aws_eks_cluster.cluster.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
+    load_config_file       = false
+    version                = "~> 1.10"
 }
 
-# data "aws_eks_cluster" "cluster" {
-#     name = var.cluster_id
-# }
+data "aws_eks_cluster" "cluster" {
+    name = var.cluster_id
+}
 
-# data "aws_eks_cluster_auth" "cluster" {
-#     name = var.cluster_id
-# }
+data "aws_eks_cluster_auth" "cluster" {
+    name = var.cluster_id
+}
 
 data "aws_caller_identity" "current" {}
 
 resource "aws_iam_policy" "ALBIngressControllerIAMPolicy" {
-  name   = "ALBIngressControllerIAMPolicy"
-  policy = <<POLICY
+    name   = "ALBIngressControllerIAMPolicy"
+    policy = <<POLICY
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -150,19 +150,13 @@ resource "aws_iam_policy" "ALBIngressControllerIAMPolicy" {
 POLICY
 }
 
-resource "time_sleep" "wait4_20_seconds" {
-  depends_on = [kubernetes_service_account.ingress]
-
-  create_duration = "20s"
-}
-
 resource "aws_iam_role" "eks_alb_ingress_controller" {
-  name        = "eks-alb-ingress-controller"
-  description = "Permissions required by the Kubernetes AWS ALB Ingress controller."
+    name        = "eks-alb-ingress-controller"
+    description = "Permissions required by the Kubernetes AWS ALB Ingress controller."
 
-  force_detach_policies = true
+    force_detach_policies = true
 
-  assume_role_policy = <<ROLE
+    assume_role_policy = <<ROLE
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -184,50 +178,50 @@ ROLE
 }
 
 resource "aws_iam_role_policy_attachment" "ALBIngressControllerIAMPolicy" {
-  policy_arn = aws_iam_policy.ALBIngressControllerIAMPolicy.arn
-  role       = aws_iam_role.eks_alb_ingress_controller.name
+    policy_arn = aws_iam_policy.ALBIngressControllerIAMPolicy.arn
+    role       = aws_iam_role.eks_alb_ingress_controller.name
 }
 
 resource "kubernetes_cluster_role" "ingress" {
-  metadata {
-    name = "alb-ingress-controller"
-    labels = {
-      "app.kubernetes.io/name"       = "alb-ingress-controller"
-      "app.kubernetes.io/managed-by" = "terraform"
+    metadata {
+        name = "alb-ingress-controller"
+        labels = {
+        "app.kubernetes.io/name"       = "alb-ingress-controller"
+        "app.kubernetes.io/managed-by" = "terraform"
+        }
     }
-  }
 
-  rule {
-    api_groups = ["", "extensions"]
-    resources  = ["configmaps", "endpoints", "events", "ingresses", "ingresses/status", "services"]
-    verbs      = ["create", "get", "list", "update", "watch", "patch"]
-  }
+    rule {
+        api_groups = ["", "extensions"]
+        resources  = ["configmaps", "endpoints", "events", "ingresses", "ingresses/status", "services"]
+        verbs      = ["create", "get", "list", "update", "watch", "patch"]
+    }
 
-  rule {
-    api_groups = ["", "extensions"]
-    resources  = ["nodes", "pods", "secrets", "services", "namespaces"]
-    verbs      = ["get", "list", "watch"]
-  }
+    rule {
+        api_groups = ["", "extensions"]
+        resources  = ["nodes", "pods", "secrets", "services", "namespaces"]
+        verbs      = ["get", "list", "watch"]
+    }
 }
 
 resource "kubernetes_cluster_role_binding" "ingress" {
-  metadata {
-    name = "alb-ingress-controller"
-    labels = {
-      "app.kubernetes.io/name"       = "alb-ingress-controller"
-      "app.kubernetes.io/managed-by" = "terraform"
+    metadata {
+        name = "alb-ingress-controller"
+        labels = {
+        "app.kubernetes.io/name"       = "alb-ingress-controller"
+        "app.kubernetes.io/managed-by" = "terraform"
+        }
     }
-  }
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = kubernetes_cluster_role.ingress.metadata[0].name
-  }
-  subject {
-    kind      = "ServiceAccount"
-    name      = kubernetes_service_account.ingress.metadata[0].name
-    namespace = kubernetes_service_account.ingress.metadata[0].namespace
-  }
+    role_ref {
+        api_group = "rbac.authorization.k8s.io"
+        kind      = "ClusterRole"
+        name      = kubernetes_cluster_role.ingress.metadata[0].name
+    }
+    subject {
+        kind      = "ServiceAccount"
+        name      = kubernetes_service_account.ingress.metadata[0].name
+        namespace = kubernetes_service_account.ingress.metadata[0].namespace
+    }
 
-  depends_on = [kubernetes_cluster_role.ingress]
+    depends_on = [kubernetes_cluster_role.ingress]
 }
