@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demoapp
+  namespace: "demoapp"
+spec:
+  selector:
+    matchLabels:
+      app: "demoapp"
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: "demoapp"
+    spec:
+      containers:
+        - name: "demoapp"
+          image: 273333313225.dkr.ecr.eu-west-1.amazonaws.com/demoapp:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
