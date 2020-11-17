@@ -163,7 +163,6 @@ try {
                                 currentBuild.result = 'UNSTABLE'
                             }
                             if(deploy){
-                                sh 'kubectl apply -f demoapp/operators/external-secret.yaml'
                                 sh 'kubectl apply -f demoapp/operators/alb-ingress-controller.yaml'
                                 sh 'kubectl apply -f demoapp/operators/webapp-deployment.yaml'
                                 sh 'kubectl apply -f demoapp/operators/nginx-service.yaml'
