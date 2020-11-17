@@ -14,7 +14,7 @@ provider "kubernetes" {
 #     name = var.cluster_id
 # }
 
-# data "aws_caller_identity" "current" {}
+data "aws_caller_identity" "current" {}
 
 resource "aws_iam_policy" "ALBIngressControllerIAMPolicy" {
   name   = "ALBIngressControllerIAMPolicy"
