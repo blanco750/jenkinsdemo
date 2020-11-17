@@ -8,7 +8,7 @@ variable "eksclustername" {
 
 variable "namespace" {
   description = "the name of eks cluster namespace where app will be deployed"
-  default     = "audience-management"
+  default     = "demoapp"
 }
 
 variable "app" {
